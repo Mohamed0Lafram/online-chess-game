@@ -1,134 +1,22 @@
 import { useEffect, useState } from 'react';
 import './Board.css'
-//images 
-//white
-import pawn_w from '../../assets/pieaces_images/pawn_w.png';
-import bishop_w from '../../assets/pieaces_images/bishop_w.png';
-import knight_w from '../../assets/pieaces_images/knight_w.png';
-import rook_w from '../../assets/pieaces_images/rook_w.png';
-import queen_w from '../../assets/pieaces_images/queen_w.png';
-import king_w from '../../assets/pieaces_images/king_w.png';
-//black
-import pawn_b from '../../assets/pieaces_images/pawn_b.png';
-import bishop_b from '../../assets/pieaces_images/bishop_b.png';
-import knight_b from '../../assets/pieaces_images/knight_b.png';
-import rook_b from '../../assets/pieaces_images/rook_b.png';
+
+
+//rules 
+import moving_rules from '../rules/general_moving_rules';
+import check_road from '../rules/check_road';
+//pieaces
+import {Pieaces} from './Pieaces';
+import check_special_move from '../rules/special_move';
+//image
 import queen_b from '../../assets/pieaces_images/queen_b.png';
-import king_b from '../../assets/pieaces_images/king_b.png';
-
-
-
-
-
-
-
-
+import queen_w from '../../assets/pieaces_images/queen_w.png';
 
 export default function Board() {
-    //game pieaces 
-    const [Pieaces, setPieaces] = useState([
-        {
-            color: 'white',
-            pieaces: [
-                {
-                    name: 'pawn_w',
-                    image: pawn_w,
-                    position: [
-                        [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [7, 8]
-                    ]
-                },
-                {
-                    name: 'bishop_w',
-                    image: bishop_w,
-                    position: [
-                        [8, 3], [8, 6]
-                    ]
-                },
-                {
-                    name: 'knight_w',
-                    image: knight_w,
-                    position: [
-                        [8, 2], [8, 7]
-                    ]
-                },
-                {
-                    name: 'rook_w',
-                    image: rook_w,
-                    position: [
-                        [8, 1], [8, 8]
-                    ]
-                },
-                {
-                    name: 'queen_w',
-                    image: queen_w,
-                    position: [
-                        [8, 5]
-                    ]
-                },
-                {
-                    name: 'king_w',
-                    image: king_w,
-                    position: [
-                        [8, 4]
-                    ]
-                },
-
-            ]
-        },
-        {
-            color: 'black',
-            pieaces: [
-                {
-                    name: 'pawn_b',
-                    image: pawn_b,
-                    position: [
-                        [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8]
-                    ]
-                },
-                {
-                    name: 'bishop_b',
-                    image: bishop_b,
-                    position: [
-                        [1, 3], [1, 6]
-                    ]
-                },
-                {
-                    name: 'knight_b',
-                    image: knight_b,
-                    position: [
-                        [1, 2], [1, 7]
-                    ]
-                },
-                {
-                    name: 'rook_b',
-                    image: rook_b,
-                    position: [
-                        [1, 1], [1, 8]
-                    ]
-                },
-                {
-                    name: 'queen_b',
-                    image: queen_b,
-                    position: [
-                        [1, 5]
-                    ]
-                },
-                {
-                    name: 'king_b',
-                    image: king_b,
-                    position: [
-                        [1, 4]
-                    ]
-                },
-
-            ]
-        }
-    ]);
+    
 
     //represente each square on the board 
     const [Squares, setSquares] = useState(Array(8).fill(Array(8).fill(0)));
-
-
 
     useEffect(() => {
         //set each pieace at its initial position
@@ -139,11 +27,13 @@ export default function Board() {
             for (let j = 0; j < Pieaces[i].pieaces.length; j++) {//classe pieace
                 for (let k = 0; k < Pieaces[i].pieaces[j].position.length; k++) { // single pieace
                     copy[Pieaces[i].pieaces[j].position[k][0] - 1][Pieaces[i].pieaces[j].position[k][1] - 1] = {
+                        color: Pieaces[i].color,
                         name: Pieaces[i].pieaces[j].name,
                         urlimage: Pieaces[i].pieaces[j].image,
-                        position: Pieaces[i].pieaces[j].position[k]
+                        position: Pieaces[i].pieaces[j].position[k],
+                        move_number : 0,
+                        possible_position : false
                     }
-
                 }
             }
         }
@@ -165,39 +55,37 @@ export default function Board() {
     //create a play sysytem where users only have access to their pieaces 
     //the turn start with white after he click two times
     //the turn goes to black and then it goes again to white etc
-    const [turn,setTurn] = useState(true);
+    const [turn, setTurn] = useState(true);
     //test
-    useEffect(() =>{console.log( (turn) ? 'the white turn' : 'the black turn')},[turn])
+    useEffect(() => { console.log((turn) ? 'the white turn' : 'the black turn') }, [turn])
 
     //variables 
-    const [first_click, setFirstClick] = useState([[],turn]);//this varibel will contain the position of the block clicked
-    
-    //this function movesa piesce from a to b
-    const move_pieace = (y, x) => {
-        if (first_click[0].length === 0) {
-            if (typeof Squares[y][x] === 'object') {
-                console.log('first click!!!!!')
-                setFirstClick([[y, x],turn]) //assing this div as the first click div
-            }
-        }
-        else {//this div is the second one clicked
-            //copy the square array
-            let copy = Squares.map((rows) => {
+    const [first_click, setFirstClick] = useState([[], turn]);//this varibel will contain the position of the block clicked
+    const [possible_positions,setPossibePositions] = useState([]);
+    const [old_possible_positions,setOldPossiblePositions] = useState([])
+    const delete_color_possible_positions = () =>{
+        //copy the square array
+        let copy = Squares.map((rows) => {
                 return rows.map((cols) => {
                     return (typeof cols === 'object') ?
                         { ...cols } :
                         cols
                 })
-            })
-            //replace the object in the first click to this div
-            copy[y][x] = copy[first_click[0]][first_click[1]];
-            copy[first_click[0]][first_click[1]] = 0;
+        })
+        //deletete the anciant possible colors
 
-            //give the turn to the other player
-            setTurn(!turn);
-            setFirstClick([[],turn]);
-            //add pieace to square 
-            setSquares(() => {
+        for (let i = 0; i < old_possible_positions.length; i++) {
+            //id the square empty make it 1 to assing its possible 
+            if (typeof copy[old_possible_positions[i][0]][old_possible_positions[i][1]] === 'object'){
+                copy[old_possible_positions[i][0]][old_possible_positions[i][1]].possible_position = false;
+            }
+            else {
+                copy[old_possible_positions[i][0]][old_possible_positions[i][1]] = 0;
+            }
+        }
+
+        //add pieace to square 
+        setSquares(() => {
                 return copy.map((rows) => {
                     return rows.map((cols) => {
                         return (typeof cols === 'object') ?
@@ -206,39 +94,234 @@ export default function Board() {
                     })
                 })
             })
-        }
+
     }
+    const color_possible_positions = () => {
+        //change the color by making all the possible squares have possible value = true ;
+        //copy the square array
+        let copy = Squares.map((rows) => {
+                return rows.map((cols) => {
+                    return (typeof cols === 'object') ?
+                        { ...cols } :
+                        cols
+                })
+            })
+        //test
+        console.log('posssible position lenght : ',possible_positions);
+        //deletete the anciant possible colors
 
-
-
-    ///get the background setup
-    const Positions = [];
-    const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    for (let i = 0; i < 8; i++) {
-        let row = []
-        for (let j = 1; j < 9; j++) {
-            row.push(cols[i] + j);
+        for (let i = 0; i < old_possible_positions.length; i++) {
+            //id the square empty make it 1 to assing its possible 
+            if (typeof copy[old_possible_positions[i][0]][old_possible_positions[i][1]] === 'object'){
+                copy[old_possible_positions[i][0]][old_possible_positions[i][1]].possible_position = false;
+            }
+            else {
+                copy[old_possible_positions[i][0]][old_possible_positions[i][1]] = 0;
+            }
         }
-        Positions.push(row)
+        //color possible positions
+        for (let i = 0; i < possible_positions.length; i++) {
+            //id the square empty make it 1 to assing its possible 
+            if (typeof copy[possible_positions[i][0]][possible_positions[i][1]] === 'object'){
+                copy[possible_positions[i][0]][possible_positions[i][1]].possible_position = true;
+            }
+            else {
+                copy[possible_positions[i][0]][possible_positions[i][1]] = 1;
+            }
+        }
+        //add pieace to square 
+        setSquares(() => {
+                return copy.map((rows) => {
+                    return rows.map((cols) => {
+                        return (typeof cols === 'object') ?
+                            { ...cols } :
+                            cols
+                    })
+                })
+            })
+
     }
+    useEffect(()=>{
+        if(possible_positions.length === 0){
+            return
+        }else{
+            color_possible_positions();
+        }        
+    },[possible_positions]);
 
 
 
 
+
+    //this function moves a piesce from a to b
+    const move_pieace = (y, x) => {
+        if (first_click[0].length === 0) {//first click
+
+            //check if the user has clicked on a pieace
+            if (typeof Squares[y][x] === 'object') {
+
+                //check the if the user has clicked on one of his piesces
+                let turn_copy = (turn) ? 'white' : 'black';
+                if (Squares[y][x].color === turn_copy) {
+
+                    //assigning this div as the first click div
+                    console.log('first click!!!!!')
+                    setFirstClick([[y, x], turn])
+
+                    //compute all the possibel positions
+                    let possible_positions_copy = moving_rules(Squares,Squares[y][x].color,Squares[y][x].name,[y,x],Squares[y][x].move_number);
+
+                    //before replacing possible positions with the new ones you must copy it to delete the style color added to it
+                    setOldPossiblePositions([...possible_positions]);
+                    setPossibePositions([...possible_positions_copy]);//the useEffect color the possible positions    
+                }
+            }
+        }
+        else{ //this div is the second one clicked
+
+            //check that the div is not the same as the first click
+            if (y === first_click[0][0] && x === first_click[0][1]){
+                console.log('TEST : YOU CLICKED THE SAME SQUARE TWICE')
+                return;
+            }
+            //compute all the possibel positions
+            let possible_positions_copy = moving_rules(Squares,Squares[y][x].color,Squares[y][x].name,[y,x],Squares[y][x].move_number);
+
+            //check if the pieace that palyer choose to take is in different color
+            if (typeof Squares[y][x] !== 'number') {
+                
+                if (Squares[y][x].color === Squares[first_click[0][0]][first_click[0][1]].color) {
+                    console.log('test if the user has clicked on one of his pieces');
+
+                    //reassing this swaure as the first clicked square
+                    setFirstClick([[y, x], turn]);
+
+                    //before replacing possible positions with the new ones you must copy it to delete the style color added to it
+                    setOldPossiblePositions([...possible_positions]);
+                    setPossibePositions([...possible_positions_copy]);
+                    return
+                }
+            }
+
+            //check that the way is clear for the moving pieace(all the squares in the strict line between a and b should be empty)
+            if(!check_road(Squares,first_click,x,y)) {
+                console.log('TEST : THE WAY TO THE CLICKED SQUARE IS FULL')
+                return;
+            }
+
+            //cheack is the move is legal
+            if (!possible_positions.some(el => el[0] === y && el[1] === x)){
+                console.log('the move is not legeal')
+                return
+            } 
+
+
+            //make the move
+            //copy the square array
+            let copy = Squares.map((rows) => {
+                return rows.map((cols) => {
+                    return (typeof cols === 'object') ?
+                        { ...cols } :
+                        cols
+                })
+            })
+
+            //retrive the default color 
+            //color possible positions
+            for (let i = 0; i < copy.length; i++) {
+                for (let j = 0; j < copy.length; j++) {
+                    //id the square empty make it 1 to assing its possible 
+                    if (typeof copy[i][j] === 'object'){
+                        copy[i][j].possible_position = false;
+                    }
+                    else {
+                        copy[i][j] = 0;
+                    }
+                }
+            }
+
+            //check if the move is spetial 
+            let special_move = check_special_move(Squares,first_click[0][0],first_click[0][1],y,x);
+            if( special_move === 'pawn'){//pawn
+                //replace the object in the first click to this div
+                copy[y][x] = {
+                        color: copy[first_click[0][0]][first_click[0][1]].color,
+                        name: 'queen',
+                        urlimage: (copy[first_click[0][0]][first_click[0][1]].color === 'white' ) ? queen_w : queen_b,
+                        position: [y,x],
+                        move_number : copy[first_click[0][0]][first_click[0][1]],
+                        possible_position : false
+                    }
+
+                copy[y][x].move_number ++;//increment the move number
+                copy[first_click[0][0]][first_click[0][1]] = 0; //assign 0 to the vavated square
+            }
+            else if(special_move === 'none') {
+                //replace the object in the first click to this div
+                copy[y][x] = copy[first_click[0][0]][first_click[0][1]];
+                copy[y][x].position = [y,x];//change the position in the object
+                copy[y][x].move_number ++;//increment the move number
+                copy[first_click[0][0]][first_click[0][1]] = 0; //assign 0 to the vavated square
+            }
+            else if (special_move === 'king right'){
+                //put the king in the position 
+                copy[y][x] = copy[first_click[0][0]][first_click[0][1]];
+                copy[y][x].position = [y,x];//change the position in the object
+                copy[y][x].move_number ++;//increment the move number
+                copy[first_click[0][0]][first_click[0][1]] = 0; //assign 0 to the vavated square
+                //put the rock in its new position
+                copy[y][x - 1] = copy[y][7]; 
+                copy[y][x-1].position = [y,x-1];//change the position in the object
+                copy[y][x-1].move_number ++;//increment the move number
+                copy[first_click[0][0]][7] = 0; //assign 0 to the vavated square
+            }
+            else if (special_move === 'king left'){
+                //put the king in the position 
+                copy[y][x] = copy[first_click[0][0]][first_click[0][1]];
+                copy[y][x].position = [y,x];//change the position in the object
+                copy[y][x].move_number ++;//increment the move number
+                copy[first_click[0][0]][first_click[0][1]] = 0; //assign 0 to the vavated square
+                //put the rock in its new position
+                copy[y][x + 1] = copy[y][0]; 
+                copy[y][x+1].position = [y,x+1];//change the position in the object
+                copy[y][x+1].move_number ++;//increment the move number
+                copy[first_click[0][0]][0] = 0; //assign 0 to the vavated square
+            }
+
+
+
+
+            //give the turn to the other player
+            setTurn(!turn);
+            setFirstClick([[], turn]);
+            
+            //add pieace to square 
+            setSquares(() => {
+                console.log('pieace added!!!!!!!')
+                return copy.map((rows) => {
+                    return rows.map((cols) => {
+                        return (typeof cols === 'object') ?
+                            { ...cols } :
+                            cols
+                    })
+                })
+            })
+        }    
+    }
 
     return (
         <div className="Board">
-            {Positions.map((row, index) => {
+            {Squares.map((row, index) => {                
                 let [color_1, color_2] = (index % 2 === 0) ?
-                    ['dark', 'light'] :
-                    ['light', 'dark'];
-                return row.map((position, iindex) => {
+                    ['#F4E9D7', '#D97D55']:
+                    ['#D97D55', '#F4E9D7'] ;
+                return row.map((col, iindex) => {
 
                     let color = (iindex % 2 === 0) ?
                         color_1 :
                         color_2;
 
-                    return <div key={position} className={color}
+                    return <div key={`${index*8 + iindex}`} className={color}
                         style={{
                             gridArea: `${index + 1} / ${iindex + 1} / ${index + 2} / ${iindex + 2}`,
                             backgroundImage: (typeof Squares[index][iindex] === 'object') ?
@@ -250,6 +333,13 @@ export default function Board() {
                             backgroundPosition: 'center',
                             width: '100%',
                             height: '100%',
+                            backgroundColor : (typeof Squares[index][iindex] === 'object') ?
+                                                    (Squares[index][iindex].possible_position === true) ? 
+                                                        getOppositeColor(color) : color     
+                                                    :
+                                                    (Squares[index][iindex] === 1)?
+                                                        getOppositeColor(color) : color
+                                                      
                         }}
                         onClick={() => move_pieace(index, iindex)}
                     ></div>
@@ -261,3 +351,12 @@ export default function Board() {
     )
 }
 
+function getOppositeColor(hex) {
+  // Remove '#' if present
+  hex = hex.replace('#', '');
+
+  // Parse to integer and invert it
+  const inverted = (0xFFFFFF ^ parseInt(hex, 16)).toString(16).padStart(6, '0');
+
+  return `#${inverted}`;
+}
