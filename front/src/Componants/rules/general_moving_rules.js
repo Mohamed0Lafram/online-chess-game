@@ -1,37 +1,37 @@
 import check_road from "./check_road";
 
-export default function moving_rules(Squares,color, name, initial_position, move_number) {
+export default function moving_rules(Squares, y, x) {//x, y rpresente the element that the user first clicked on
     //pawns 
-    if (name === 'pawn') {
+    if (Squares[y][x].name === 'pawn') {
         let allowed_positions = []
-        if (move_number === 0) {
-            let operation = (color === 'white') ? [-2,-1] : [2,1];
+        if (Squares[y][x].move_number === 0) {
+            let operation = (Squares[y][x].color === 'white') ? [-2,-1] : [2,1];
             //check tis there a possible pieace in this possile position
-            if(typeof Squares[initial_position[0] + operation[0]][initial_position[1]] !== 'object' && 
-                typeof Squares[initial_position[0] + operation[1] ][initial_position[1]] !== 'object'
+            if(typeof Squares[y + operation[0]][x] !== 'object' && 
+                typeof Squares[y + operation[1] ][x] !== 'object'
             ){
-                allowed_positions.push([initial_position[0] + operation[0], initial_position[1]]);
+                allowed_positions.push([y + operation[0], x]);
             }
             
         }
-        let operation = (color === 'white') ? -1 : 1;
+        let operation = (Squares[y][x].color === 'white') ? -1 : 1;
         
         //check tis there a possible pieace in this possile position
-        if(typeof Squares[initial_position[0] + operation][initial_position[1]] !== 'object'){
-            allowed_positions.push([initial_position[0] + operation, initial_position[1]]);
+        if(typeof Squares[y + operation][x] !== 'object'){
+            allowed_positions.push([y + operation, x]);
         }
         //check if the position is possible
-        if( (initial_position[1] + 1) <  8 ){//check if the position is possible
-            let possible_square = Squares[initial_position[0] + operation][initial_position[1]+1]
-            if(typeof possible_square === 'object' && possible_square.color !== Squares[initial_position[0]][initial_position[1]].color){
-                allowed_positions.push([initial_position[0] + operation, initial_position[1] + 1]);
+        if( (x + 1) <  8 ){//check if the position is possible
+            let possible_square = Squares[y + operation][ x + 1]
+            if(typeof possible_square === 'object' && possible_square.color !== Squares[y][x].color){
+                allowed_positions.push([y + operation, x + 1]);
             }
             
         }
-        if((initial_position[1] - 1) >= 0){//check if the position is possible
-            let possible_square = Squares[initial_position[0] + operation][initial_position[1] - 1]
-            if(typeof possible_square === 'object' && possible_square.color !== Squares[initial_position[0]][initial_position[1]].color){
-                allowed_positions.push([initial_position[0] + operation, initial_position[1] - 1]);
+        if((x - 1) >= 0){//check if the position is possible
+            let possible_square = Squares[y + operation][x - 1]
+            if(typeof possible_square === 'object' && possible_square.color !== Squares[y][x].color){
+                allowed_positions.push([y + operation, x - 1]);
             }
         }  
         //note : if the pieace is on the side the list duplicate one position
@@ -40,132 +40,328 @@ export default function moving_rules(Squares,color, name, initial_position, move
 
     }
     //rooks 
-    else if (name === 'rook') {
-        console.log('TEST : possible position rook  ',coor_ver_hor(initial_position))
-        return coor_ver_hor(initial_position);
+    else if (Squares[y][x].name === 'rook') {
+        console.log('TEST : possible position rook  ',coor_ver_hor(Squares,y,x))
+        return  coor_ver_hor(Squares,y,x);//get all allowed position
+         
     }
     //bishops
-    else if (name === 'bishop') {
-        return coor_diag(initial_position);
+    else if (Squares[y][x].name === 'bishop') {
+        return coor_diag(Squares,y,x);
     }
     //queens
-    else if (name === 'queen') {
+    else if (Squares[y][x].name === 'queen') {
 
-        console.log('TEST : possible position queen ',[...coor_diag(initial_position), ...coor_ver_hor(initial_position)])
-        return [...coor_diag(initial_position), ...coor_ver_hor(initial_position)];
+        console.log('TEST : possible position queen ',[...coor_diag(Squares,y,x), ...coor_ver_hor(Squares,y,x)])
+        return [...coor_diag(Squares,y,x), ...coor_ver_hor(Squares,y,x)];
     }
     //king
-    else if (name === 'king') {
+    else if (Squares[y][x].name === 'king') {
         let allowed_positions = []
-        if (initial_position[0] + 1 < 8) {
-            allowed_positions.push([initial_position[0] + 1, initial_position[1]])
-            if (initial_position[1] + 1 < 8) allowed_positions.push([initial_position[0] + 1, initial_position[1] + 1]);
-            if (initial_position[1] - 1 >= 0) allowed_positions.push([initial_position[0] + 1, initial_position[1] - 1]);
-        }
-        if (initial_position[0] - 1 >= 0) {
-            allowed_positions.push([initial_position[0] - 1, initial_position[1]])
-            if (initial_position[1] + 1 < 8) allowed_positions.push([initial_position[0] - 1, initial_position[1] + 1]);
-            if (initial_position[1] - 1 >= 0) allowed_positions.push([initial_position[0] - 1, initial_position[1] - 1]);
-        }
-        if (initial_position[1] + 1 < 8) allowed_positions.push([initial_position[0], initial_position[1] + 1]);
-        if (initial_position[1] - 1 >= 0) allowed_positions.push([initial_position[0], initial_position[1] - 1]);
 
-        //add the castling option (note doble check that the user )
-        if(Squares[initial_position[0]][initial_position[1]].move_number === 0 ){
-            if(typeof Squares[initial_position[0]][7] === 'object'){//first rook
+        if (y + 1 < 8) {//add veritical position
+            //check if the block is empty
+            let checked_blocked = check_for_blocked_road(Squares,y + 1,x,y,x)
+            if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y + 1, x])
+            
+            if (x + 1 < 8){
+                let checked_blocked = check_for_blocked_road(Squares,y + 1, x + 1,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y + 1, x + 1])
+            };
+            if (x - 1 >= 0){
+                let checked_blocked = check_for_blocked_road(Squares,y + 1,x-1,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y + 1, x - 1])
+            }
+        }
+        if (y - 1 >= 0) {
+
+            let checked_blocked = check_for_blocked_road(Squares,y - 1,x,y,x)
+            if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y - 1, x])
+            
+            if (x + 1 < 8){
+                let checked_blocked = check_for_blocked_road(Squares,y - 1,x+1,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 )  allowed_positions.push([y - 1, x + 1])
+            };
+            if (x - 1 >= 0){
+                let checked_blocked = check_for_blocked_road(Squares,y - 1,x-1,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 )  allowed_positions.push([y - 1, x - 1]);
+            } 
+        }
+
+        if (x + 1 < 8){
+            let checked_blocked = check_for_blocked_road(Squares,y,x+1,y,x)
+            if(checked_blocked === 0 || checked_blocked === -1 )  allowed_positions.push([y, x + 1]);
+        };
+        if (x - 1 >= 0){
+            let checked_blocked = check_for_blocked_road(Squares,y,x-1,y,x)
+            if(checked_blocked === 0 || checked_blocked === -1 )  allowed_positions.push([y, x - 1]);
+        } 
+
+
+        //add the castling option (note doble check that the user hasnt move neither the king nor the selected rook)
+        if(Squares[y][x].move_number === 0 ){
+            if(typeof Squares[y][7] === 'object'){//first rook
                 //check that the right is empty lane is empty
                 
-                let is_empty = check_road(Squares, [initial_position,true], 7,initial_position[0])
-                console.log('TEST : THE LANE BETWEEN THE KING AND THE ROOK ',is_empty , initial_position)
-                if (is_empty && Squares[initial_position[0]][7].move_number === 0) {
-                    allowed_positions.push([initial_position[0], initial_position[1] + 2 ]);
+                let is_empty = check_road(Squares, [y,x], 7,y)
+                console.log('TEST : THE LANE BETWEEN THE KING AND THE ROOK ',is_empty , y,x)
+                if (is_empty && Squares[y][7].move_number === 0) {
+                    allowed_positions.push([y, x + 2 ]);
                 }
             }
-            if(typeof Squares[initial_position[0]][0] === 'object'){
+            if(typeof Squares[y][0] === 'object'){
                 //check id the lane is empty
-                let is_empty = check_road(Squares,[initial_position,true], 0,initial_position[0])
-                if (is_empty && Squares[initial_position[0]][0].move_number === 0) {
-                    allowed_positions.push([initial_position[0], initial_position[1] - 2 ]);
+                let is_empty = check_road(Squares,[y,x], 0,y)
+                if (is_empty && Squares[y][0].move_number === 0) {
+                    allowed_positions.push([y, x - 2 ]);
                 }
             }
         }
 
         return allowed_positions
     }
-    else if (name === 'knight') {
+    else if (Squares[y][x].name === 'knight') {
         let allowed_positions = [];
 
-        if (initial_position[0] + 1 < 8) {
-            if (initial_position[1] + 2 < 8) allowed_positions.push([initial_position[0] + 1, initial_position[1] + 2]);
-            if (initial_position[1] - 2 >= 0) allowed_positions.push([initial_position[0] + 1, initial_position[1] - 2]);
+        if (y + 1 < 8) {
+            if (x + 2 < 8){
+                let checked_blocked = check_for_blocked_road(Squares,y+1,x+2,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 )  allowed_positions.push([y + 1, x + 2]);
+            } ;
+            if (x - 2 >= 0){
+                let checked_blocked = check_for_blocked_road(Squares,y+1,x-2,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y + 1, x - 2]);
+            } 
         }
-        if (initial_position[0] - 1 >= 0) {
-            if (initial_position[1] + 2 < 8) allowed_positions.push([initial_position[0] - 1, initial_position[1] + 2]);
-            if (initial_position[1] - 2 >= 0) allowed_positions.push([initial_position[0] - 1, initial_position[1] - 2]);
+        if (y - 1 >= 0) {
+            if (x + 2 < 8){
+                let checked_blocked = check_for_blocked_road(Squares,y-1,x+2,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y - 1, x + 2]);
+            } 
+            if (x - 2 >= 0){
+                let checked_blocked = check_for_blocked_road(Squares,y-1,x-2,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y - 1, x - 2]);
+            } 
         }
-        if (initial_position[0] - 2 >= 0) {
-            if (initial_position[1] + 1 < 8) allowed_positions.push([initial_position[0] - 2, initial_position[1] + 1]);
-            if (initial_position[1] - 1 >= 0) allowed_positions.push([initial_position[0] - 2, initial_position[1] - 1]);
+        if (y - 2 >= 0) {
+            if (x + 1 < 8){
+                let checked_blocked = check_for_blocked_road(Squares,y-2,x+1,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y - 2, x + 1]);
+            } 
+            if (x - 1 >= 0){
+                let checked_blocked = check_for_blocked_road(Squares,y-2,x-1,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y - 2, x - 1]);
+            } 
         }
-        if (initial_position[0] + 2 < 8) {
-            if (initial_position[1] + 1 < 8) allowed_positions.push([initial_position[0] + 2, initial_position[1] + 1]);
-            if (initial_position[1] - 1 >= 0) allowed_positions.push([initial_position[0] + 2, initial_position[1] - 1]);
+        if (y + 2 < 8) {
+            if (x + 1 < 8){
+                let checked_blocked = check_for_blocked_road(Squares,y+2,x+1,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y + 2, x + 1]);
+            } 
+            if (x - 1 >= 0){
+                let checked_blocked = check_for_blocked_road(Squares,y+2,x - 1,y,x)
+                if(checked_blocked === 0 || checked_blocked === -1 ) allowed_positions.push([y + 2, x - 1]);
+            } 
         }
 
         return allowed_positions;
     }
 }
 
-function coor_diag(initial_position) {
+function coor_diag(Squares,y,x) {
     let allowed_positions = [];
 
     //diagonal up right 
     let i = 1;
-    while ((initial_position[0] - i >= 0) && (initial_position[1] + i < 8)) {
-        allowed_positions.push([initial_position[0] - i, initial_position[1] + i]);
+    while ((y - i >= 0) && (x + i < 8)) {
+        //if this position contain an object 
+        if(typeof Squares[y - i][x + i] === 'object'){
+            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //if the object is the same color as the initial pieace return without adding it to the position
+            if ( Squares[y - i][x + i].color === Squares[y][x].color) {
+                break;
+            }
+            else{
+                allowed_positions.push([y - i, x + i]);
+                break;
+            };
+        }
+        else{//the square is empty
+            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
+            allowed_positions.push([y - i, x + i])
+        }
         i++;
     }
     //diagonal up left 
     i = 1;
-    while ((initial_position[0] - i >= 0) && (initial_position[1] - i >= 0)) {
-        allowed_positions.push([initial_position[0] - i, initial_position[1] - i]);
+    while ((y - i >= 0) && (x - i >= 0)) {
+        //if this position contain an object 
+        if(typeof Squares[y - i][x - i] === 'object'){
+            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //if the object is the same color as the initial pieace return without adding it to the position
+            if ( Squares[y - i][x - i].color === Squares[y][x].color) {
+                break;
+            }
+            else{
+                allowed_positions.push([y - i, x - i]);
+                break;
+            };
+        }
+        else{//the square is empty
+            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
+            allowed_positions.push([y - i, x - i]);
+        }
         i++;
     }
     //diagonal down right
     i = 1;
-    while ((initial_position[0] + i < 8) && (initial_position[1] + i < 8)) {
-        allowed_positions.push([initial_position[0] + i, initial_position[1] + i]);
+    while ((y + i < 8) && (x + i < 8)) {
+        //if this position contain an object 
+        if(typeof Squares[y + i][x + i] === 'object'){
+            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //if the object is the same color as the initial pieace return without adding it to the position
+            if ( Squares[y + i][x + i].color === Squares[y][x].color) {
+                break;
+            }
+            else{
+                allowed_positions.push([y + i, x + i]);
+                break;
+            };
+        }
+        else{//the square is empty
+            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
+            allowed_positions.push([y + i, x + i]);
+        }
         i++;
     }
     //diagonal down left
     i = 1;
-    while ((initial_position[0] + i < 8) && (initial_position[1] - i >= 0)) {
-        allowed_positions.push([initial_position[0] + i, initial_position[1] - i]);
+    while ((y + i < 8) && (x - i >= 0)) {
+        //if this position contain an object 
+        if(typeof Squares[y + i][x - i] === 'object'){
+            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //if the object is the same color as the initial pieace return without adding it to the position
+            if ( Squares[y + i][x - i].color === Squares[y][x].color) {
+                break;
+            }
+            else{
+                allowed_positions.push([y + i, x - i]);
+                break;
+            };
+        }
+        else{//the square is empty
+            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
+            allowed_positions.push([y + i, x - i]);
+        }
         i++;
     }
     return allowed_positions
 }
 
-function coor_ver_hor(initial_position) {//checked
+function coor_ver_hor(Squares,y,x) {//checked
     let allowed_positions = [];
-    //first horizental 
-    for (let i = initial_position[1] + 1; i < 8; i++) {
-        allowed_positions.push([initial_position[0], i])
-    };
-    //other direction horizental 
-    for (let i = initial_position[1] - 1; i >= 0; i--) {
-        allowed_positions.push([initial_position[0], i])
+    //horizental right
+    console.log('TEST ROOK POSSIBLE POSITION 1: INITIAL POSITION ',y,x);
+    for (let i = x + 1; i < 8; i++) {
+        //if this position contain an object 
+        if(typeof Squares[y][i] === 'object'){
+            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //if the object is the same color as the initial pieace return without adding it to the position
+            if ( Squares[y][i].color === Squares[y][x].color) {
+                break;
+            }
+            else{
+                allowed_positions.push([y, i]);
+                break;
+            };
+        }
+        else{//the square is empty
+            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
+            allowed_positions.push([y, i])
+        }
+    }
+        
+    
+    //horizental left
+    for (let i = x - 1; i >= 0; i--) {
+        //if this position contain an object 
+        if(typeof Squares[y][i] === 'object'){
+            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //if the object is the same color as the initial pieace return without adding it to the position
+            if ( Squares[y][i].color === Squares[y][x].color) {
+                break;
+            }
+            else{
+                allowed_positions.push([y, i]);
+                break;
+            };
+        }
+        else{//the square is empty
+            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
+            allowed_positions.push([y, i])
+        }
     };
     //vertical up
-    for (let i = initial_position[0] + 1; i < 8; i++) {
-        allowed_positions.push([i, initial_position[1]])
+    for (let i = y + 1; i < 8; i++) {
+        //if this position contain an object 
+        if(typeof Squares[i][x] === 'object'){
+            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //if the object is the same color as the initial pieace return without adding it to the position
+            if ( Squares[i][x].color === Squares[y][x].color) {
+                break;
+            }
+            else{
+                allowed_positions.push([i,x]);
+                break;
+            };
+        }
+        else{//the square is empty
+            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
+            allowed_positions.push([i,x])
+        }
     };
-    //vertical down 
-    for (let i = initial_position[0] - 1; i >= 0; i--) {
-        allowed_positions.push([i, initial_position[1]])
 
+    //vertical down 
+    for (let i = y - 1; i >= 0; i--) {
+        //if this position contain an object 
+        if(typeof Squares[i][x] === 'object'){
+            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //if the object is the same color as the initial pieace return without adding it to the position
+            if ( Squares[i][x].color === Squares[y][x].color) {
+                break;
+            }
+            else{
+                allowed_positions.push([i,x]);
+                break;
+            };
+        }
+        else{//the square is empty
+            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
+            allowed_positions.push([i,x])
+        }
     };
 
     return allowed_positions;
 }
 
+
+
+
+
+//this function return 0(the checked square is empty) 1(the checked square contain a pieace with the same color) -1(the checked square contain a pieace with the opossite color)
+function check_for_blocked_road(Squares,y_check,x_check,y_original,x_original){
+    //if this position contain an object 
+    if(typeof Squares[y_check][x_check] === 'object'){
+        //if the object is the same color as the initial pieace return without adding it to the position
+        if ( Squares[y_check][x_check].color === Squares[y_original][x_original].color) {
+            return 1;
+        }
+        else{
+            return -1;
+        };
+    }
+    else{//the square is empty
+        return 0;
+    }
+
+}

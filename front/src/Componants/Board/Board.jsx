@@ -11,6 +11,10 @@ import check_special_move from '../rules/special_move';
 //image
 import queen_b from '../../assets/pieaces_images/queen_b.png';
 import queen_w from '../../assets/pieaces_images/queen_w.png';
+import check_for_checks from '../rules/check_for_checks';
+import check_checks from '../rules/check_for_checks';
+import possible_squares from '../rules/possible_squares';
+import game_end from '../rules/end_game';
 
 export default function Board() {
     
@@ -30,7 +34,7 @@ export default function Board() {
                         color: Pieaces[i].color,
                         name: Pieaces[i].pieaces[j].name,
                         urlimage: Pieaces[i].pieaces[j].image,
-                        position: Pieaces[i].pieaces[j].position[k],
+                        position:[Pieaces[i].pieaces[j].position[k][0] - 1 , Pieaces[i].pieaces[j].position[k][1] - 1],
                         move_number : 0,
                         possible_position : false
                     }
@@ -60,7 +64,7 @@ export default function Board() {
     useEffect(() => { console.log((turn) ? 'the white turn' : 'the black turn') }, [turn])
 
     //variables 
-    const [first_click, setFirstClick] = useState([[], turn]);//this varibel will contain the position of the block clicked
+    const [first_click, setFirstClick] = useState([]);//this varibel will contain the position of the block clicked
     const [possible_positions,setPossibePositions] = useState([]);
     const [old_possible_positions,setOldPossiblePositions] = useState([])
     const delete_color_possible_positions = () =>{
@@ -106,8 +110,7 @@ export default function Board() {
                         cols
                 })
             })
-        //test
-        console.log('posssible position lenght : ',possible_positions);
+
         //deletete the anciant possible colors
 
         for (let i = 0; i < old_possible_positions.length; i++) {
@@ -154,8 +157,8 @@ export default function Board() {
 
 
     //this function moves a piesce from a to b
-    const move_pieace = (y, x) => {
-        if (first_click[0].length === 0) {//first click
+    const move_pieace = (y, x) => {//X AND Y ARE THE INDEX OF THE ELEMENT THAT IS CLICKED
+        if (first_click.length === 0) {//first click
 
             //check if the user has clicked on a pieace
             if (typeof Squares[y][x] === 'object') {
@@ -166,10 +169,10 @@ export default function Board() {
 
                     //assigning this div as the first click div
                     console.log('first click!!!!!')
-                    setFirstClick([[y, x], turn])
+                    setFirstClick([y, x])
 
                     //compute all the possibel positions
-                    let possible_positions_copy = moving_rules(Squares,Squares[y][x].color,Squares[y][x].name,[y,x],Squares[y][x].move_number);
+                    let possible_positions_copy = possible_squares(Squares,y,x);
 
                     //before replacing possible positions with the new ones you must copy it to delete the style color added to it
                     setOldPossiblePositions([...possible_positions]);
@@ -180,22 +183,20 @@ export default function Board() {
         else{ //this div is the second one clicked
 
             //check that the div is not the same as the first click
-            if (y === first_click[0][0] && x === first_click[0][1]){
+            if (y === first_click[0] && x === first_click[1]){
                 console.log('TEST : YOU CLICKED THE SAME SQUARE TWICE')
                 return;
             }
-            //compute all the possibel positions
-            let possible_positions_copy = moving_rules(Squares,Squares[y][x].color,Squares[y][x].name,[y,x],Squares[y][x].move_number);
 
-            //check if the pieace that palyer choose to take is in different color
+            //check if the pieace that palyer choose to take is in same color
             if (typeof Squares[y][x] !== 'number') {
                 
-                if (Squares[y][x].color === Squares[first_click[0][0]][first_click[0][1]].color) {
+                if (Squares[y][x].color === Squares[first_click[0]][first_click[1]].color) {
                     console.log('test if the user has clicked on one of his pieces');
-
+                    let possible_positions_copy = possible_squares(Squares,y,x);
                     //reassing this swaure as the first clicked square
-                    setFirstClick([[y, x], turn]);
-
+                    setFirstClick([y, x]);
+                    
                     //before replacing possible positions with the new ones you must copy it to delete the style color added to it
                     setOldPossiblePositions([...possible_positions]);
                     setPossibePositions([...possible_positions_copy]);
@@ -241,51 +242,51 @@ export default function Board() {
             }
 
             //check if the move is spetial 
-            let special_move = check_special_move(Squares,first_click[0][0],first_click[0][1],y,x);
+            let special_move = check_special_move(Squares,first_click[0],first_click[1],y,x);
             if( special_move === 'pawn'){//pawn
                 //replace the object in the first click to this div
                 copy[y][x] = {
-                        color: copy[first_click[0][0]][first_click[0][1]].color,
+                        color: copy[first_click[0]][first_click[1]].color,
                         name: 'queen',
-                        urlimage: (copy[first_click[0][0]][first_click[0][1]].color === 'white' ) ? queen_w : queen_b,
+                        urlimage: (copy[first_click[0]][first_click[1]].color === 'white' ) ? queen_w : queen_b,
                         position: [y,x],
-                        move_number : copy[first_click[0][0]][first_click[0][1]],
+                        move_number : copy[first_click[0]][first_click[1]],
                         possible_position : false
                     }
 
                 copy[y][x].move_number ++;//increment the move number
-                copy[first_click[0][0]][first_click[0][1]] = 0; //assign 0 to the vavated square
+                copy[first_click[0]][first_click[1]] = 0; //assign 0 to the vavated square
             }
             else if(special_move === 'none') {
                 //replace the object in the first click to this div
-                copy[y][x] = copy[first_click[0][0]][first_click[0][1]];
+                copy[y][x] = copy[first_click[0]][first_click[1]];
                 copy[y][x].position = [y,x];//change the position in the object
                 copy[y][x].move_number ++;//increment the move number
-                copy[first_click[0][0]][first_click[0][1]] = 0; //assign 0 to the vavated square
+                copy[first_click[0]][first_click[1]] = 0; //assign 0 to the vavated square
             }
             else if (special_move === 'king right'){
                 //put the king in the position 
-                copy[y][x] = copy[first_click[0][0]][first_click[0][1]];
+                copy[y][x] = copy[first_click[0]][first_click[1]];
                 copy[y][x].position = [y,x];//change the position in the object
                 copy[y][x].move_number ++;//increment the move number
-                copy[first_click[0][0]][first_click[0][1]] = 0; //assign 0 to the vavated square
+                copy[first_click[0]][first_click[1]] = 0; //assign 0 to the vavated square
                 //put the rock in its new position
                 copy[y][x - 1] = copy[y][7]; 
                 copy[y][x-1].position = [y,x-1];//change the position in the object
                 copy[y][x-1].move_number ++;//increment the move number
-                copy[first_click[0][0]][7] = 0; //assign 0 to the vavated square
+                copy[first_click[0]][7] = 0; //assign 0 to the vavated square
             }
             else if (special_move === 'king left'){
                 //put the king in the position 
-                copy[y][x] = copy[first_click[0][0]][first_click[0][1]];
+                copy[y][x] = copy[first_click[0]][first_click[1]];
                 copy[y][x].position = [y,x];//change the position in the object
                 copy[y][x].move_number ++;//increment the move number
-                copy[first_click[0][0]][first_click[0][1]] = 0; //assign 0 to the vavated square
+                copy[first_click[0]][first_click[1]] = 0; //assign 0 to the vavated square
                 //put the rock in its new position
                 copy[y][x + 1] = copy[y][0]; 
                 copy[y][x+1].position = [y,x+1];//change the position in the object
                 copy[y][x+1].move_number ++;//increment the move number
-                copy[first_click[0][0]][0] = 0; //assign 0 to the vavated square
+                copy[first_click[0]][0] = 0; //assign 0 to the vavated square
             }
 
 
@@ -293,11 +294,10 @@ export default function Board() {
 
             //give the turn to the other player
             setTurn(!turn);
-            setFirstClick([[], turn]);
+            setFirstClick([]);
             
             //add pieace to square 
             setSquares(() => {
-                console.log('pieace added!!!!!!!')
                 return copy.map((rows) => {
                     return rows.map((cols) => {
                         return (typeof cols === 'object') ?
@@ -306,7 +306,33 @@ export default function Board() {
                     })
                 })
             })
+            //because the Square is still syncing we will use the copy varible
+            //SEARCH IF THE OTHER PLAYER IS CHECKED
+            //FIND THE OPPOSTIE KING POSITION
+            const opposite_king = {};
+            for (let i = 0; i < copy.length; i++) {
+                for (let j = 0; j < copy.length; j++) {
+                    if(typeof copy[i][j] === 'object') {
+                        if((copy[i][j].color !== copy[y][x].color) && (copy[i][j].name === 'king' )) {
+                            Object.assign(opposite_king,copy[i][j]);
+                        }
+                    }
+                }
+                
+            }
+
+            //after the user is checked 
+            //if there is a move for the opposite user continue else end the game
+            //to check if the game is ending get all possible moves from the user
+            console.log('opposite king',opposite_king)
+
+            if (game_end(copy,opposite_king)) {
+                console.log('GAME ENDED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            }
+
+
         }    
+
     }
 
     return (

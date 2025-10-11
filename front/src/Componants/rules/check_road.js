@@ -1,12 +1,12 @@
 //cheack weather the road from first click to second click is empty or not
 export default function check_road (Squares, first_click, x,y) {//[y,x] represent the second click coordination (awnser the question is the road empty yes or no)
     //VERITCAL (SAME X)
-    if (x === first_click[0][1]) {
+    if (x === first_click[1]) {
         ////get all the square in between and if one of them in not empty return
-        let small_y_copy = (y > first_click[0][0]) ?
-            first_click[0][0] : y;
+        let small_y_copy = (y > first_click[0]) ?
+            first_click[0] : y;
 
-        let distance = Math.abs(y - first_click[0][0]);
+        let distance = Math.abs(y - first_click[0]);
 
         //check if all the places are empty
         for (let i = 1; i < distance; i++) {
@@ -16,13 +16,13 @@ export default function check_road (Squares, first_click, x,y) {//[y,x] represen
         }
     }
     /////horizental (same y)
-    else if (y === first_click[0][0]) {
+    else if (y === first_click[0]) {
 
         ////get all the square in between and if one of them in not empty return
-        let small_x_copy = (x > first_click[0][1]) ?
-            first_click[0][1] :
+        let small_x_copy = (x > first_click[1]) ?
+            first_click[1] :
             x;
-        let distance = Math.abs(x - first_click[0][1]);
+        let distance = Math.abs(x - first_click[1]);
 
         //check if all the places are empty
         for (let i = 1; i < distance; i++) {
@@ -35,15 +35,15 @@ export default function check_road (Squares, first_click, x,y) {//[y,x] represen
 
     }
     ///diagonal (x1-x2) === (y1 -y2)
-    else if (Math.abs(x - first_click[0][1]) === Math.abs(y - first_click[0][0])) {
+    else if (Math.abs(x - first_click[1]) === Math.abs(y - first_click[0])) {
 
         console.log('test diagonal')
         ////get all the square in between and if one of them in not empty return
         /////select the smallest y coordiantion 
-        let [[y_copy, x_copy], x_other] = (y > first_click[0][0]) ?
-            [first_click[0], x] : [[y, x], first_click[0][1]]; // y_copy -> smallest y coordination ; x_copy -> x cordination of the smallest y ; x_other -> the other x coordination
+        let [[y_copy, x_copy], x_other] = (y > first_click[0]) ?
+            [first_click, x] : [[y, x], first_click[1]]; // y_copy -> smallest y coordination ; x_copy -> x cordination of the smallest y ; x_other -> the other x coordination
 
-        let distance = Math.abs(x - first_click[0][1]);
+        let distance = Math.abs(x - first_click[1]);
 
         //check if all the places are empty
         for (let i = 1; i < distance; i++) {
@@ -55,7 +55,7 @@ export default function check_road (Squares, first_click, x,y) {//[y,x] represen
             }
         }
     }
-    console.log('TEST : THIS LANE IS NOT FULL ',y ,first_click[0][0])
+    console.log('TEST : THIS LANE IS NOT FULL ',y ,first_click[0])
 
     return true;
 }
