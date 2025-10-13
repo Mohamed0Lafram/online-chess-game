@@ -123,6 +123,8 @@ export default function check_checks(Squares, y, x) {//x, y are indexes of the o
         i++; 
     }
 
+    console.log('TEST POSSIBLE THRETS ',possible_threts)
+
 
     //
     //for each position compute all the possible moves and if one of them equal the position of king return 
@@ -158,7 +160,6 @@ export default function check_checks(Squares, y, x) {//x, y are indexes of the o
         if (x + 1 < 8)  knight_possible_positions.push([y + 2, x + 1]);
         if (x - 1 >= 0) knight_possible_positions.push([y + 2, x - 1]);
     }
-    console.log(`TEST CHECK : ALL THE KNIGHT POSSIBLE THRETS `,knight_possible_positions)
     for (let i = 0; i < knight_possible_positions.length; i++) {
         let element = Squares[knight_possible_positions[i][0]][knight_possible_positions[i][1]];
         if (typeof element === 'object') {

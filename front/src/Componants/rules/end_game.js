@@ -3,7 +3,7 @@ import possible_squares from "./possible_squares";
 
 
 export default function  game_end(copy,opposite_king){
-    console.log('opposite king',opposite_king)
+    //console.log('opposite king',opposite_king)
     if(check_checks(copy,opposite_king.position[0],opposite_king.position[1])){
         //get all the pieaces and compute all possible moves if all the lists are empty end the game
         let pieaces  = [];
@@ -21,6 +21,8 @@ export default function  game_end(copy,opposite_king){
             let possible_move = possible_squares(copy,pieaces[i].position[0],pieaces[i].position[1]) 
             if(possible_move.length !== 0 ) return false;
         }
+        return true;
     }
-    return true;
+    return false;
+    
 }

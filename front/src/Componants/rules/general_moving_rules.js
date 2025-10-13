@@ -176,7 +176,6 @@ function coor_diag(Squares,y,x) {
     while ((y - i >= 0) && (x + i < 8)) {
         //if this position contain an object 
         if(typeof Squares[y - i][x + i] === 'object'){
-            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
             //if the object is the same color as the initial pieace return without adding it to the position
             if ( Squares[y - i][x + i].color === Squares[y][x].color) {
                 break;
@@ -187,7 +186,6 @@ function coor_diag(Squares,y,x) {
             };
         }
         else{//the square is empty
-            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
             allowed_positions.push([y - i, x + i])
         }
         i++;
@@ -197,7 +195,6 @@ function coor_diag(Squares,y,x) {
     while ((y - i >= 0) && (x - i >= 0)) {
         //if this position contain an object 
         if(typeof Squares[y - i][x - i] === 'object'){
-            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
             //if the object is the same color as the initial pieace return without adding it to the position
             if ( Squares[y - i][x - i].color === Squares[y][x].color) {
                 break;
@@ -208,7 +205,6 @@ function coor_diag(Squares,y,x) {
             };
         }
         else{//the square is empty
-            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
             allowed_positions.push([y - i, x - i]);
         }
         i++;
@@ -218,7 +214,6 @@ function coor_diag(Squares,y,x) {
     while ((y + i < 8) && (x + i < 8)) {
         //if this position contain an object 
         if(typeof Squares[y + i][x + i] === 'object'){
-            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
             //if the object is the same color as the initial pieace return without adding it to the position
             if ( Squares[y + i][x + i].color === Squares[y][x].color) {
                 break;
@@ -229,7 +224,6 @@ function coor_diag(Squares,y,x) {
             };
         }
         else{//the square is empty
-            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
             allowed_positions.push([y + i, x + i]);
         }
         i++;
@@ -239,7 +233,6 @@ function coor_diag(Squares,y,x) {
     while ((y + i < 8) && (x - i >= 0)) {
         //if this position contain an object 
         if(typeof Squares[y + i][x - i] === 'object'){
-            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
             //if the object is the same color as the initial pieace return without adding it to the position
             if ( Squares[y + i][x - i].color === Squares[y][x].color) {
                 break;
@@ -250,7 +243,6 @@ function coor_diag(Squares,y,x) {
             };
         }
         else{//the square is empty
-            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
             allowed_positions.push([y + i, x - i]);
         }
         i++;
@@ -276,7 +268,6 @@ function coor_ver_hor(Squares,y,x) {//checked
             };
         }
         else{//the square is empty
-            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
             allowed_positions.push([y, i])
         }
     }
@@ -286,7 +277,6 @@ function coor_ver_hor(Squares,y,x) {//checked
     for (let i = x - 1; i >= 0; i--) {
         //if this position contain an object 
         if(typeof Squares[y][i] === 'object'){
-            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
             //if the object is the same color as the initial pieace return without adding it to the position
             if ( Squares[y][i].color === Squares[y][x].color) {
                 break;
@@ -297,7 +287,6 @@ function coor_ver_hor(Squares,y,x) {//checked
             };
         }
         else{//the square is empty
-            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
             allowed_positions.push([y, i])
         }
     };
@@ -316,7 +305,6 @@ function coor_ver_hor(Squares,y,x) {//checked
             };
         }
         else{//the square is empty
-            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
             allowed_positions.push([i,x])
         }
     };
@@ -336,7 +324,6 @@ function coor_ver_hor(Squares,y,x) {//checked
             };
         }
         else{//the square is empty
-            console.log('TEST ROOK POSSIBLE POSITION 2: NO OBJECT IS DETECTED');
             allowed_positions.push([i,x])
         }
     };

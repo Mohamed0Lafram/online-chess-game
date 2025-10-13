@@ -31,13 +31,11 @@ export default function check_road (Squares, first_click, x,y) {//[y,x] represen
                 return false;
             }
         }
-        console.log('TEST HORIZENTAL 2: THIS SQUARE IS NOT FULL ')
 
     }
     ///diagonal (x1-x2) === (y1 -y2)
     else if (Math.abs(x - first_click[1]) === Math.abs(y - first_click[0])) {
 
-        console.log('test diagonal')
         ////get all the square in between and if one of them in not empty return
         /////select the smallest y coordiantion 
         let [[y_copy, x_copy], x_other] = (y > first_click[0]) ?
@@ -55,7 +53,6 @@ export default function check_road (Squares, first_click, x,y) {//[y,x] represen
             }
         }
     }
-    console.log('TEST : THIS LANE IS NOT FULL ',y ,first_click[0])
 
     return true;
 }

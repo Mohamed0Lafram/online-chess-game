@@ -4,6 +4,7 @@
 export default function check_special_move (Squares,y_initial,x_initial,y,x){//y
     if(Squares[y_initial][x_initial].name === 'pawn'){
         if (y === 7 || y === 0) {
+            console.log('TEST SPETIAL MOVE :  SPECIAL MOvE DETECTED')
             return 'pawn'
         }
     }
@@ -12,6 +13,7 @@ export default function check_special_move (Squares,y_initial,x_initial,y,x){//y
             //check if the rook exist and its move number is 0
             if (typeof Squares[y_initial][7] === 'object') {
                 if (Squares[y_initial][7].move_number === 0) {
+                    console.log('TEST SPETIAL MOVE :  SPECIAL MOvE DETECTED')
                     return 'king right'
                 }
             }
@@ -20,12 +22,13 @@ export default function check_special_move (Squares,y_initial,x_initial,y,x){//y
             //check if the rook exist and its move number is 0
             if (typeof Squares[y_initial][0] === 'object') {
                 if (Squares[y_initial][0].move_number === 0) {
+                    console.log('TEST SPETIAL MOVE :  SPECIAL MOvE DETECTED')
                     return 'king left'
                 }
             }
         }
     }
-    console.log('TEST SPETIAL MOVE : NO SPECIAL MOBE DETECTED')
+    
     return 'none'
 } 
 //castling :
