@@ -58,7 +58,8 @@ io.on('connection', (socket) => {
             games_list.shift();
         }
     })
-    // 👇 Add this block
+
+
     socket.on("send turn", (data) => {
         console.log("Turn received:", data);
 
