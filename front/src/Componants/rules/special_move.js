@@ -7,6 +7,14 @@ export default function check_special_move (Squares,y_initial,x_initial,y,x){//y
             console.log('TEST SPETIAL MOVE :  SPECIAL MOvE DETECTED')
             return 'pawn'
         }
+        else if(x +1  === x_initial && typeof Squares[y][x] === 'number'){//enpassent left
+            console.log('TEST EN PASSENT LEFT')
+            return 'en passent '
+        }
+        else if(x - 1  === x_initial && typeof Squares[y][x] === 'number'){//enpassent right
+            console.log('TEST EN PASSENT RIGHT')
+            return 'en passent'
+        }
     }
     else if(Squares[y_initial][x_initial].name === 'king' && Squares[y_initial][x_initial].move_number === 0){
         if (x === 6) {
@@ -27,7 +35,9 @@ export default function check_special_move (Squares,y_initial,x_initial,y,x){//y
                 }
             }
         }
+        
     }
+
     
     return 'none'
 } 

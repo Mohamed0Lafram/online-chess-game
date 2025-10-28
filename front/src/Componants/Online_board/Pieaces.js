@@ -14,7 +14,13 @@ import rook_b from '../../assets/pieaces_images/rook_b.png';
 import queen_b from '../../assets/pieaces_images/queen_b.png';
 import king_b from '../../assets/pieaces_images/king_b.png';
 //game pieaces 
-export const Pieaces = [
+
+
+
+
+
+export default function initial_positions(color){
+    const Pieaces = [
     {
         color: 'white',
         pieaces: [
@@ -112,5 +118,4 @@ export const Pieaces = [
         ]
     }
 ];
-
-
+} 

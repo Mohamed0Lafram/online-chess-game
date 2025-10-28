@@ -1,8 +1,8 @@
 import check_checks from "./check_for_checks";
 import moving_rules from "./general_moving_rules";
 
-export default function possible_squares(Squares, y, x) {
-    let initial_possible_moves = moving_rules(Squares, y, x);
+export default function possible_squares(Squares, y, x,last_move) {
+    let initial_possible_moves = moving_rules(Squares, y, x,last_move);
     console.log('possible squares ', initial_possible_moves)
     let filtred_position = [];
 
@@ -47,7 +47,7 @@ export default function possible_squares(Squares, y, x) {
         }
         //console.log('alie king ',alie_king)
         //if the king is checked delete the tested position from the possiiblitys and return the state into its original form
-        if (!check_checks(copy, alie_king.position[0], alie_king.position[1])) {
+        if (!check_checks(copy, alie_king.position[0], alie_king.position[1],last_move)) {
             filtred_position.push([y_test, x_test]);
         }
 

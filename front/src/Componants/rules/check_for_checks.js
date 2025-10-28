@@ -14,7 +14,7 @@ import moving_rules from "./general_moving_rules";
 
 
 // this function returns true(the  king is checked) or false
-export default function check_checks(Squares, y, x) {//x, y are indexes of the opposite king or the indexes of the the square that the king might go to
+export default function check_checks(Squares, y, x,last_move) {//x, y are indexes of the opposite king or the indexes of the the square that the king might go to
     //to check if the king is threthen (knight ) (evry other pieace)
     ////  find the first pieace to him from each side
     let possible_threts = []
@@ -123,17 +123,17 @@ export default function check_checks(Squares, y, x) {//x, y are indexes of the o
         i++; 
     }
 
-    console.log('TEST POSSIBLE THRETS ',possible_threts)
+    //console.log('TEST POSSIBLE THRETS ',possible_threts)
 
 
     //
     //for each position compute all the possible moves and if one of them equal the position of king return 
     for (let i = 0; i < possible_threts.length; i++) {
-        let all_possible_moves = moving_rules(Squares,possible_threts[i][0],possible_threts[i][1]);
+        let all_possible_moves = moving_rules(Squares,possible_threts[i][0],possible_threts[i][1],last_move);
         for (let j = 0; j < all_possible_moves.length; j++) {
             if (all_possible_moves[j][0] === y && all_possible_moves[j][1] === x) {
                 //check
-                console.log(`TEST CHECK : THE ${Squares[y][x].color} king IS CHECKED`);
+                //console.log(`TEST CHECK : THE ${Squares[y][x].color} king IS CHECKED`);
                 return true;
             }
             
@@ -164,7 +164,7 @@ export default function check_checks(Squares, y, x) {//x, y are indexes of the o
         let element = Squares[knight_possible_positions[i][0]][knight_possible_positions[i][1]];
         if (typeof element === 'object') {
             if(element.name === 'knight' && element.color !== Squares[y][x].color){
-                console.log(`TEST CHECK : THE ${Squares[y][x].color} king IS CHECKED BY A KNIGHT`);
+                //console.log(`TEST CHECK : THE ${Squares[y][x].color} king IS CHECKED BY A KNIGHT`);
                 return true;
             }
         }

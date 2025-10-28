@@ -1,6 +1,6 @@
 import check_road from "./check_road";
 
-export default function moving_rules(Squares, y, x) {//x, y rpresente the element that the user first clicked on
+export default function moving_rules(Squares, y, x,last_move) {//x, y rpresente the element that the user first clicked on
     //pawns 
     if (Squares[y][x].name === 'pawn') {
         let allowed_positions = []
@@ -34,14 +34,52 @@ export default function moving_rules(Squares, y, x) {//x, y rpresente the elemen
                 allowed_positions.push([y + operation, x - 1]);
             }
         }  
+        //check for possible en passent
+        if( x + 1 < 8){
+            if(typeof Squares[y][x+1] === 'object'){
+                if(Squares[y][x+1].name === 'pawn' && Squares[y][x+1].color !== Squares[y][x].color){
+                    //check if the last move played is a pawn with squares passed
+                    //[copy[y][x].name,[y,x],ini_pos]
+                    if ( last_move[0] === 'pawn' 
+                        &&  last_move[1][0] === y
+                        &&  last_move[1][1] === x+1
+                        &&  last_move[1][0] - last_move[2][0] === 2 
+                    ){
+                        if(typeof Squares[y-1][x + 1] === 'number'){//this work only for white for now
+                            //make the move 
+                            allowed_positions.push([y-1,x + 1])
+                        }
+                    }
+                }
+            }
+        }
+               
+        //check for possible en passent
+        if( x - 1 >= 0){
+            if(typeof Squares[y][x-1] === 'object'){
+                if(Squares[y][x-1].name === 'pawn' && Squares[y][x-1].color !== Squares[y][x].color){
+                    //check if the last move played is a pawn with squares passed
+                    if ( last_move[0] === 'pawn' 
+                        &&  last_move[1][0] === y
+                        &&  last_move[1][1] === x-1
+                        &&  last_move[1][0] - last_move[2][0] === 2 
+                    ){
+                        if(typeof Squares[y-1][x - 1] === 'number'){//this work only for white for now
+                            //make the move 
+                            allowed_positions.push([y-1,x - 1])
+                        }
+                    }
+                }
+            }
+        }
         //note : if the pieace is on the side the list duplicate one position
-        console.log('TEST :allowed positions for the pawn',allowed_positions)
+        //console.log('TEST :allowed positions for the pawn',allowed_positions)
         return allowed_positions;
 
     }
     //rooks 
     else if (Squares[y][x].name === 'rook') {
-        console.log('TEST : possible position rook  ',coor_ver_hor(Squares,y,x))
+        //console.log('TEST : possible position rook  ',coor_ver_hor(Squares,y,x))
         return  coor_ver_hor(Squares,y,x);//get all allowed position
          
     }
@@ -52,7 +90,7 @@ export default function moving_rules(Squares, y, x) {//x, y rpresente the elemen
     //queens
     else if (Squares[y][x].name === 'queen') {
 
-        console.log('TEST : possible position queen ',[...coor_diag(Squares,y,x), ...coor_ver_hor(Squares,y,x)])
+        //console.log('TEST : possible position queen ',[...coor_diag(Squares,y,x), ...coor_ver_hor(Squares,y,x)])
         return [...coor_diag(Squares,y,x), ...coor_ver_hor(Squares,y,x)];
     }
     //king
@@ -104,7 +142,7 @@ export default function moving_rules(Squares, y, x) {//x, y rpresente the elemen
                 //check that the right is empty lane is empty
                 
                 let is_empty = check_road(Squares, [y,x], 7,y)
-                console.log('TEST : THE LANE BETWEEN THE KING AND THE ROOK ',is_empty , y,x)
+                //console.log('TEST : THE LANE BETWEEN THE KING AND THE ROOK ',is_empty , y,x)
                 if (is_empty && Squares[y][7].move_number === 0) {
                     allowed_positions.push([y, x + 2 ]);
                 }
@@ -253,11 +291,11 @@ function coor_diag(Squares,y,x) {
 function coor_ver_hor(Squares,y,x) {//checked
     let allowed_positions = [];
     //horizental right
-    console.log('TEST ROOK POSSIBLE POSITION 1: INITIAL POSITION ',y,x);
+    //console.log('TEST ROOK POSSIBLE POSITION 1: INITIAL POSITION ',y,x);
     for (let i = x + 1; i < 8; i++) {
         //if this position contain an object 
         if(typeof Squares[y][i] === 'object'){
-            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
             //if the object is the same color as the initial pieace return without adding it to the position
             if ( Squares[y][i].color === Squares[y][x].color) {
                 break;
@@ -294,7 +332,7 @@ function coor_ver_hor(Squares,y,x) {//checked
     for (let i = y + 1; i < 8; i++) {
         //if this position contain an object 
         if(typeof Squares[i][x] === 'object'){
-            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
             //if the object is the same color as the initial pieace return without adding it to the position
             if ( Squares[i][x].color === Squares[y][x].color) {
                 break;
@@ -313,7 +351,7 @@ function coor_ver_hor(Squares,y,x) {//checked
     for (let i = y - 1; i >= 0; i--) {
         //if this position contain an object 
         if(typeof Squares[i][x] === 'object'){
-            console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
+            //console.log('TEST ROOK POSSIBLE POSITION 1: OBJECT DETECTED');
             //if the object is the same color as the initial pieace return without adding it to the position
             if ( Squares[i][x].color === Squares[y][x].color) {
                 break;

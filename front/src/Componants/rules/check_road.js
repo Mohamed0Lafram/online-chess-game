@@ -27,7 +27,7 @@ export default function check_road (Squares, first_click, x,y) {//[y,x] represen
         //check if all the places are empty
         for (let i = 1; i < distance; i++) {
             if (typeof Squares[y][small_x_copy + i] !== 'number') {
-                console.log('TEST HORIZENTAL 1: THIS SQUARE IS FULL ',Squares[y][small_x_copy + i],typeof Squares[y][small_x_copy + i])
+                //console.log('TEST HORIZENTAL 1: THIS SQUARE IS FULL ',Squares[y][small_x_copy + i],typeof Squares[y][small_x_copy + i])
                 return false;
             }
         }

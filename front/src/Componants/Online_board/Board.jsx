@@ -20,11 +20,13 @@ export default function Board({ My_color, room_name }) {
     //represente each square on the board 
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     const navigate = useNavigate();
-
     const [turn, setTurn] = useState(true);
     const [Squares, setSquares] = useState(
         Array.from({ length: 8 }, () => Array(8).fill(0))
     );
+
+    const moves_history = useRef([]);
+
     const squaresRef = useRef(Squares);
     useEffect(() => {
         squaresRef.current = Squares;
@@ -41,6 +43,9 @@ export default function Board({ My_color, room_name }) {
     }
     //this function moves pieacesfrom a to b it follow the chess moving rules (castle, promoting )
     const abstact_move_pieace = (copy, ini_pos, y, x) => {//ini_pos initila position [y,x] indexs of the final position //copy is the squares (it shouldnt be s state varible)
+        
+
+
         //check if the move is spetial  
         let special_move = check_special_move(copy, ini_pos[0], ini_pos[1], y, x);
         if (special_move === 'pawn') {//pawn
@@ -88,6 +93,42 @@ export default function Board({ My_color, room_name }) {
             copy[y][x + 1].move_number++;//increment the move number
             copy[ini_pos[0]][0] = 0; //assign 0 to the vavated square
         }
+        else if (special_move === 'en passent'){
+            //replace the object in the first click to this div
+            copy[y][x] = copy[ini_pos[0]][ini_pos[1]];
+            copy[y][x].position = [y, x];//change the position in the object
+            copy[y][x].move_number++;//increment the move number
+            copy[ini_pos[0]][ini_pos[1]] = 0; //assign 0 to the vavated square
+
+            //delete the pawn in the left side
+            copy[y + 1][x] = 0;
+
+        }
+        const add_to_moving_hsitory = () =>{
+            if(moves_history.current.length !== 0){
+                if (
+                    moves_history.current[moves_history.current.length - 1][0] !== copy[y][x].name 
+                    || moves_history.current[moves_history.current.length - 1][1][0] !== y
+                    || moves_history.current[moves_history.current.length - 1][1][1] !== x 
+                ){
+                    //add to hsitory
+                    moves_history.current.push([copy[y][x].name,[y,x],ini_pos]); 
+                    //test
+                    console.log('TEST MOVING HSITORY : ',moves_history.current)
+                }
+                else{
+                    console.log('TEST MOVE HISTORY  :MOVE NOT ADDED')
+                } 
+            }else{
+                //add to hsitory
+                moves_history.current.push([copy[y][x].name,[x,y],ini_pos]); 
+                //test
+                console.log('TEST MOVING HSITORY : ',moves_history.current)
+            }
+            
+            
+        }
+        add_to_moving_hsitory();
         return copy
     }
 
@@ -120,6 +161,13 @@ export default function Board({ My_color, room_name }) {
 
             setTurn(() => (data.turn === 'white') ? true : false);
             console.log('socket is working data : ', My_color)
+            if (game_end(data.game_end.board, data.game_end.op_king_pos,moves_history.current[moves_history.current.length - 1]) === 'win') {
+                console.log('GAME ENDED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                navigate('/end_game/' + (turn) ? 'white' : 'black');
+            }else if(game_end(data.game_end.board, data.game_end.op_king_pos,moves_history.current[moves_history.current.length - 1]) === 'draw'){
+                console.log('GAME ENDED in DRAW !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                navigate('/end_game/' + (turn) ? 'white' : 'black');
+            }
             if (data.turn === My_color) {
 
 
@@ -134,12 +182,13 @@ export default function Board({ My_color, room_name }) {
                 copy = copy_Square(abstact_move_pieace(copy,data.ini_pos,data.fin_pos[0],data.fin_pos[1]));
 
 
-                console.log('move is played ', copy)
                 //copy too the square
                 setSquares(() => copy_Square(copy))
             }
         })
         console.log(room_name)
+
+
 
     }, [My_color])
 
@@ -181,6 +230,9 @@ export default function Board({ My_color, room_name }) {
         }
     }, [possible_positions]);
 
+
+
+
     //this function moves a piesce from a to b
     const move_pieace = (y, x, ini_pos) => {//X AND Y ARE THE INDEX OF THE ELEMENT THAT IS CLICKED
         //check if it this player turn 
@@ -190,7 +242,6 @@ export default function Board({ My_color, room_name }) {
 
         if (player_turn !== My_color) return;
 
-        console.log('possition of square ', ini_pos.length);
         if (ini_pos.length === 0) {//first click
             console.log('first click!!!!!')
             //check if the user has clicked on a pieace
@@ -205,7 +256,7 @@ export default function Board({ My_color, room_name }) {
                     setFirstClick([y, x])
 
                     //compute all the possibel positions
-                    let possible_positions_copy = possible_squares(Squares, y, x);
+                    let possible_positions_copy = possible_squares(Squares, y, x,moves_history.current[moves_history.current.length - 1]);
 
 
                     setPossibePositions([...possible_positions_copy]);//the useEffect color the possible positions    
@@ -219,7 +270,7 @@ export default function Board({ My_color, room_name }) {
 
                 if (Squares[y][x].color === Squares[ini_pos[0]][ini_pos[1]].color) {
                     console.log('test if the user has clicked on one of his pieces');
-                    let possible_positions_copy = possible_squares(Squares, y, x);
+                    let possible_positions_copy = possible_squares(Squares, y, x,moves_history.current[moves_history.current.length - 1]);
                     //reassing this swaure as the first clicked square
                     setFirstClick([y, x]);
 
@@ -279,15 +330,15 @@ export default function Board({ My_color, room_name }) {
             //to check if the game is ending get all possible moves from the user
             // console.log('opposite king', opposite_king)
 
-            if (game_end(copy, opposite_king)) {
-                console.log('GAME ENDED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                navigate('/end_game/' + (turn) ? 'white' : 'black');
-            }
             socket.emit('send turn', {
                 turn: (turn) ? 'black' : 'white',
                 ini_pos: ini_pos,
                 fin_pos: [y, x],
-                room_name: room_name
+                room_name: room_name,
+                game_end :{
+                                'board':copy,
+                                'op_king_pos' : opposite_king
+                            }
             })
             console.log('move is sent ', (turn) ? 'black' : 'white')
 
